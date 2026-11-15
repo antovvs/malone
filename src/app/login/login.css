@@ -1,0 +1,210 @@
+/*
+ * Page de connexion Malone.
+ *
+ * Toutes les animations en boucle ne touchent que `transform` et `opacity` :
+ * elles tournent sur le GPU, sans recalcul de mise en page, donc sans vider
+ * la batterie d'un téléphone. Les flous sont posés une fois (statiques).
+ */
+
+.login-root {
+  --login-bg: #0a0a0a;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--login-bg);
+  color: #fafafa;
+  color-scheme: dark;
+}
+
+/* ---- Fond : aurora bleu / violet + grille de points ---- */
+
+.login-aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform;
+  opacity: 0.75;
+}
+
+.login-aurora--blue {
+  top: -18%;
+  left: -12%;
+  width: 62vmax;
+  height: 62vmax;
+  background: radial-gradient(circle at 35% 35%, rgba(37, 99, 235, 0.55), transparent 62%);
+  animation: login-drift-a 26s ease-in-out infinite alternate;
+}
+
+.login-aurora--violet {
+  right: -18%;
+  bottom: -24%;
+  width: 68vmax;
+  height: 68vmax;
+  background: radial-gradient(circle at 60% 55%, rgba(124, 58, 237, 0.5), transparent 60%);
+  animation: login-drift-b 32s ease-in-out infinite alternate;
+}
+
+.login-aurora--cyan {
+  top: 30%;
+  left: 38%;
+  width: 40vmax;
+  height: 40vmax;
+  opacity: 0.38;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.5), transparent 60%);
+  animation: login-drift-c 38s ease-in-out infinite alternate;
+}
+
+.login-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.11) 1px, transparent 1.5px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+}
+
+/* Assombrit les bords pour ramener l'œil sur la carte. */
+.login-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 85% 75% at 50% 45%, transparent 35%, rgba(10, 10, 10, 0.85) 100%);
+}
+
+@keyframes login-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(14vmax, 9vmax, 0) scale(1.18); }
+}
+@keyframes login-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to { transform: translate3d(-16vmax, -10vmax, 0) scale(0.92); }
+}
+@keyframes login-drift-c {
+  from { transform: translate3d(-10vmax, 6vmax, 0) scale(0.9); }
+  to { transform: translate3d(8vmax, -8vmax, 0) scale(1.15); }
+}
+
+/* ---- Carte ---- */
+
+.login-card {
+  animation: login-card-in 500ms var(--ease-out-expo) both;
+}
+
+/* Liseré lumineux en haut de la carte : donne l'épaisseur du verre. */
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 12% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  pointer-events: none;
+}
+
+@keyframes login-card-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Apparition en cascade des blocs de la carte (délai posé en ligne). */
+.login-rise {
+  animation: login-rise 520ms var(--ease-out-expo) both;
+}
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Erreur : la carte tremble brièvement. */
+.login-shake {
+  animation: login-shake 400ms ease-in-out;
+}
+@keyframes login-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-7px); }
+  35% { transform: translateX(6px); }
+  55% { transform: translateX(-4px); }
+  75% { transform: translateX(3px); }
+}
+
+/* Succès : la carte s'efface vers l'avant avant la redirection. */
+.login-leave {
+  animation: login-leave 380ms var(--ease-out-expo) forwards;
+}
+@keyframes login-leave {
+  to { opacity: 0; transform: scale(1.04); filter: blur(6px); }
+}
+
+/* Message d'erreur : glisse vers le bas en apparaissant. */
+.login-error {
+  animation: login-error-in 320ms var(--ease-out-expo) both;
+}
+@keyframes login-error-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Bouton principal : légère élévation avec un rebond au survol. */
+.login-submit {
+  transition:
+    transform 320ms var(--ease-spring),
+    box-shadow 320ms var(--ease-out-expo),
+    background-color 200ms ease;
+}
+@media (hover: hover) {
+  .login-submit:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 30px -8px rgba(255, 255, 255, 0.35),
+      0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+.login-submit:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Point lumineux du logo. */
+.login-logo-dot {
+  animation: login-pulse 2.8s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes login-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.6); }
+}
+
+/* ---- Easter egg : confettis du code Konami ---- */
+
+.login-confetti {
+  position: fixed;
+  top: -16px;
+  z-index: 60;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: login-confetti-fall var(--fall-duration, 2.4s) cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+}
+@keyframes login-confetti-fall {
+  from { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); }
+  85% { opacity: 1; }
+  to { opacity: 0; transform: translate3d(var(--drift, 0), 105vh, 0) rotate(var(--spin, 540deg)); }
+}
+
+/* Filet de sécurité posé par le formulaire si l'animation d'entrée n'a pas démarré. */
+.login-static .login-card:not(.login-leave),
+.login-static .login-rise {
+  animation: none;
+}
+
+/* Mouvement réduit demandé par l'utilisateur : tout est affiché, rien ne bouge. */
+@media (prefers-reduced-motion: reduce) {
+  .login-aurora,
+  .login-card,
+  .login-rise,
+  .login-shake,
+  .login-leave,
+  .login-error,
+  .login-logo-dot {
+    animation: none;
+  }
+  .login-submit {
+    transition: none;
+  }
+}
